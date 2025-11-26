@@ -130,6 +130,9 @@ export default function AlgorithmsPage() {
           <p className="text-[var(--text-secondary)]">
             Select an algorithm to visualize. Step through each operation.
           </p>
+          <p className="text-xs text-[var(--text-muted)] mt-3">
+            made with love by <a href="https://junietoc.github.io/website/" target="_blank" rel="noopener noreferrer" className="text-[var(--accent-green)] hover:underline">Juliana Nieto Cárdenas</a> with Opus 4.5 support ♥
+          </p>
         </div>
 
         {/* Category Filter */}
