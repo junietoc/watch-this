@@ -737,7 +737,7 @@ export default function KMPNextPage() {
                     const oneBasedIdx = idx + 1;
                     const isI = currentStep?.i === oneBasedIdx;
                     const isJ = currentStep?.j === oneBasedIdx && currentStep.type !== "init" && currentStep.type !== "end";
-                    const isIPlus1 = currentStep?.i !== null && currentStep.i + 1 === oneBasedIdx && currentStep.type === "if-check";
+                    const isIPlus1 = currentStep != null && currentStep.i != null && currentStep.i + 1 === oneBasedIdx && currentStep.type === "if-check";
                     const isMatch = currentStep?.comparison === "match" && (isI || isJ);
                     const isMismatch = currentStep?.comparison === "mismatch" && (isI || isJ);
 
@@ -774,7 +774,7 @@ export default function KMPNextPage() {
                     const oneBasedIdx = idx + 1;
                     const isI = currentStep?.i === oneBasedIdx;
                     const isJ = currentStep?.j === oneBasedIdx && currentStep.type !== "init" && currentStep.type !== "end";
-                    const isIPlus1 = currentStep?.i !== null && currentStep.i + 1 === oneBasedIdx && currentStep.type === "if-check";
+                    const isIPlus1 = currentStep != null && currentStep.i != null && currentStep.i + 1 === oneBasedIdx && currentStep.type === "if-check";
                     
                     return (
                       <div
