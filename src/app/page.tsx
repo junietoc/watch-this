@@ -88,9 +88,13 @@ export default function Home() {
               Algorithms visualized, step by step.
             </p>
             
-            <p className="text-[var(--text-muted)] max-w-xl mb-10 leading-relaxed">
+            <p className="text-[var(--text-muted)] max-w-xl mb-6 leading-relaxed">
               An interactive tool for understanding how algorithms work.
               Watch the execution flow, inspect variables, and learn by doing.
+            </p>
+
+            <p className="text-xs text-[var(--text-muted)] mb-10">
+              made with love by <a href="https://junietoc.github.io/website/" target="_blank" rel="noopener noreferrer" className="text-[var(--accent-green)] hover:underline">Juliana Nieto Cárdenas</a> with Opus 4.5 support ♥
             </p>
 
             {/* CTA */}
