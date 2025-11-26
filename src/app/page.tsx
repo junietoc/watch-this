@@ -25,6 +25,34 @@ const algorithms = [
     description: "Find all pattern occurrences in text using Morris-Pratt",
     icon: "→",
   },
+  {
+    id: "kmpnext",
+    name: "KMPNext",
+    category: "String Matching",
+    description: "Compute the optimized failure function for Knuth-Morris-Pratt",
+    icon: "κ",
+  },
+  {
+    id: "kmp",
+    name: "KMP Search",
+    category: "String Matching",
+    description: "Find all pattern occurrences using Knuth-Morris-Pratt",
+    icon: "⇒",
+  },
+  {
+    id: "bm-computed",
+    name: "BM ComputeD",
+    category: "String Matching",
+    description: "Compute the D array (good suffix shift) for Boyer-Moore",
+    icon: "Δ",
+  },
+  {
+    id: "bm",
+    name: "BM Search",
+    category: "String Matching",
+    description: "Boyer-Moore search with right-to-left comparison",
+    icon: "←",
+  },
 ];
 
 export default function Home() {
