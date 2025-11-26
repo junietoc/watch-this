@@ -1,7 +1,7 @@
 "use client";
 
 /*
-  🔤 MPNEXT VISUALIZER PAGE
+  🎯 MP (MORRIS-PRATT) STRING MATCHING VISUALIZER
   Terminal-inspired clean design.
 */
 
@@ -14,165 +14,179 @@ import { useState, useEffect, useRef, useCallback } from "react";
 
 interface Step {
   line: number;
-  i: number | null;
+  i: number;
   j: number;
-  jStart: number | null;
-  jEnd: number | null;
-  pI: string | null;
-  pJ: string | null;
-  mpnextIdx: number | null;
-  mpnextVal: number | null;
-  mpnextSnapshot: Record<number, number | null>;
+  tChar: string | null;
+  pChar: string | null;
+  mpnext: number[];
+  matches: number[];
   action: string;
-  type: "init" | "for" | "while" | "while-exit" | "increment" | "no-increment" | "assign" | "end";
-  comparison?: "match" | "mismatch" | "none";
+  type: "init" | "outer-while" | "inner-while" | "inner-while-exit" | "increment" | "match-found" | "end";
+  comparison?: "match" | "mismatch" | "reset" | "none";
+}
+
+// ============================================
+// COMPUTE MPNEXT
+// ============================================
+
+function computeMPNext(pattern: string): number[] {
+  const m = pattern.length;
+  const mpnext: number[] = new Array(m + 2).fill(0);
+  
+  mpnext[1] = 0;
+  let j = 0;
+  
+  for (let i = 1; i < m; i++) {
+    while (j > 0 && pattern[i] !== pattern[j]) {
+      j = mpnext[j];
+    }
+    
+    if (pattern[i] === pattern[j]) {
+      j++;
+    }
+    
+    mpnext[i + 1] = j;
+  }
+  
+  mpnext[m + 1] = mpnext[m];
+  
+  return mpnext;
 }
 
 // ============================================
 // ALGORITHM LOGIC
 // ============================================
 
-function computeAllSteps(originalPattern: string): Step[] {
-  const p = " " + originalPattern;
-  const m = originalPattern.length;
-  const mpnext: (number | null)[] = new Array(m + 2).fill(null);
+function computeAllSteps(text: string, pattern: string): Step[] {
+  const n = text.length;
+  const m = pattern.length;
+  const mpnext = computeMPNext(pattern);
   const allSteps: Step[] = [];
+  const matches: number[] = [];
 
-  mpnext[1] = 0;
-  let j = 0;
+  const t = " " + text;
+  const p = " " + pattern;
+
+  let i = 1;
+  let j = 1;
   
   allSteps.push({
     line: 3,
-    i: null,
-    j: 0,
-    jStart: null,
-    jEnd: 0,
-    pI: null,
-    pJ: null,
-    mpnextIdx: 1,
-    mpnextVal: 0,
-    mpnextSnapshot: { 1: 0 },
-    action: "Initialize: j ← 0, MPnext[1] ← 0",
+    i: i,
+    j: j,
+    tChar: null,
+    pChar: null,
+    mpnext: [...mpnext],
+    matches: [...matches],
+    action: "Initialize: i ← 1, j ← 1",
     type: "init",
   });
 
-  for (let i = 1; i <= m; i++) {
-    const jStart = j;
-
+  while (j <= n) {
     allSteps.push({
       line: 4,
       i: i,
       j: j,
-      jStart: jStart,
-      jEnd: null,
-      pI: p[i],
-      pJ: j >= 1 && j <= m ? p[j] : null,
-      mpnextIdx: null,
-      mpnextVal: null,
-      mpnextSnapshot: { ...mpnext } as Record<number, number | null>,
-      action: `Enter for loop: i = ${i}`,
-      type: "for",
+      tChar: t[j],
+      pChar: i <= m ? p[i] : null,
+      mpnext: [...mpnext],
+      matches: [...matches],
+      action: `Outer while: j=${j} ≤ n=${n}, continue`,
+      type: "outer-while",
     });
 
-    while (j > 0 && p[i] !== p[j]) {
+    while ((i === m + 1) || (i > 0 && p[i] !== t[j])) {
+      const reason = i === m + 1 
+        ? `i=${i} = m+1=${m + 1} (found match, look for next)`
+        : `i=${i} > 0 and p[${i}]='${p[i]}' ≠ t[${j}]='${t[j]}'`;
+      
       allSteps.push({
         line: 5,
         i: i,
         j: j,
-        jStart: jStart,
-        jEnd: null,
-        pI: p[i],
-        pJ: p[j],
-        mpnextIdx: null,
-        mpnextVal: null,
-        mpnextSnapshot: { ...mpnext } as Record<number, number | null>,
-        action: `While: j=${j} > 0 and p[${i}]='${p[i]}' ≠ p[${j}]='${p[j]}' → j ← MPnext[${j}] = ${mpnext[j]}`,
-        type: "while",
-        comparison: "mismatch",
+        tChar: t[j],
+        pChar: i <= m ? p[i] : null,
+        mpnext: [...mpnext],
+        matches: [...matches],
+        action: `Inner while: ${reason} → i ← MPnext[${i}] = ${mpnext[i]}`,
+        type: "inner-while",
+        comparison: i === m + 1 ? "reset" : "mismatch",
       });
-      j = mpnext[j]!;
+      
+      i = mpnext[i];
     }
 
-    if (j === 0) {
+    if (i === 0) {
       allSteps.push({
         line: 5,
         i: i,
         j: j,
-        jStart: jStart,
-        jEnd: null,
-        pI: p[i],
-        pJ: null,
-        mpnextIdx: null,
-        mpnextVal: null,
-        mpnextSnapshot: { ...mpnext } as Record<number, number | null>,
-        action: `While check: j=${j} = 0, condition false → exit while`,
-        type: "while-exit",
+        tChar: t[j],
+        pChar: p[1],
+        mpnext: [...mpnext],
+        matches: [...matches],
+        action: `Inner while exit: i=${i} = 0, will try fresh match`,
+        type: "inner-while-exit",
         comparison: "none",
       });
-    } else if (p[i] === p[j]) {
+    } else {
       allSteps.push({
         line: 5,
         i: i,
         j: j,
-        jStart: jStart,
-        jEnd: null,
-        pI: p[i],
-        pJ: p[j],
-        mpnextIdx: null,
-        mpnextVal: null,
-        mpnextSnapshot: { ...mpnext } as Record<number, number | null>,
-        action: `While check: p[${i}]='${p[i]}' = p[${j}]='${p[j]}' → exit while`,
-        type: "while-exit",
+        tChar: t[j],
+        pChar: p[i],
+        mpnext: [...mpnext],
+        matches: [...matches],
+        action: `Inner while exit: p[${i}]='${p[i]}' = t[${j}]='${t[j]}' (match!)`,
+        type: "inner-while-exit",
         comparison: "match",
       });
     }
 
+    i++;
+    j++;
+    
     allSteps.push({
       line: 6,
       i: i,
       j: j,
-      jStart: jStart,
-      jEnd: j + 1,
-      pI: p[i],
-      pJ: j >= 1 && j <= m ? p[j] : null,
-      mpnextIdx: null,
-      mpnextVal: null,
-      mpnextSnapshot: { ...mpnext } as Record<number, number | null>,
-      action: `Increment: j ← j + 1 = ${j + 1}`,
+      tChar: j <= n ? t[j] : null,
+      pChar: i <= m ? p[i] : null,
+      mpnext: [...mpnext],
+      matches: [...matches],
+      action: `Increment: i ← ${i - 1} + 1 = ${i}, j ← ${j - 1} + 1 = ${j}`,
       type: "increment",
-      comparison: "none",
     });
-    j++;
 
-    mpnext[i + 1] = j;
-    allSteps.push({
-      line: 7,
-      i: i,
-      j: j,
-      jStart: jStart,
-      jEnd: j,
-      pI: p[i],
-      pJ: null,
-      mpnextIdx: i + 1,
-      mpnextVal: j,
-      mpnextSnapshot: { ...mpnext } as Record<number, number | null>,
-      action: `Assign: MPnext[${i + 1}] ← ${j}`,
-      type: "assign",
-    });
+    if (i === m + 1) {
+      const matchPos = j - i + 1;
+      matches.push(matchPos);
+      
+      allSteps.push({
+        line: 7,
+        i: i,
+        j: j,
+        tChar: j <= n ? t[j] : null,
+        pChar: null,
+        mpnext: [...mpnext],
+        matches: [...matches],
+        action: `Match found! i=${i} = m+1=${m + 1} → Output position ${matchPos}`,
+        type: "match-found",
+        comparison: "match",
+      });
+    }
   }
 
   allSteps.push({
     line: 9,
-    i: null,
+    i: i,
     j: j,
-    jStart: null,
-    jEnd: j,
-    pI: null,
-    pJ: null,
-    mpnextIdx: null,
-    mpnextVal: null,
-    mpnextSnapshot: { ...mpnext } as Record<number, number | null>,
-    action: "Algorithm complete!",
+    tChar: null,
+    pChar: null,
+    mpnext: [...mpnext],
+    matches: [...matches],
+    action: `Complete! Found ${matches.length} match${matches.length !== 1 ? "es" : ""}: ${matches.length > 0 ? matches.join(", ") : "none"}`,
     type: "end",
   });
 
@@ -184,46 +198,52 @@ function computeAllSteps(originalPattern: string): Step[] {
 // ============================================
 
 const algorithmCode = [
-  { line: 1, content: "ComputeMPNext(p)    {m = |p|}", tokens: [
-    { type: "function", text: "ComputeMPNext" },
+  { line: 1, content: "MP(t, p)    {n = |t|, m = |p|}", tokens: [
+    { type: "function", text: "MP" },
     { type: "bracket", text: "(" },
+    { type: "variable", text: "t" },
+    { type: "plain", text: ", " },
     { type: "variable", text: "p" },
     { type: "bracket", text: ")" },
-    { type: "comment", text: "    {m = |p|}" },
+    { type: "comment", text: "    {n = |t|, m = |p|}" },
   ]},
   { line: 2, content: "begin", tokens: [
     { type: "keyword", text: "begin" },
   ]},
-  { line: 3, content: "   j ← MPnext[1] ← 0", tokens: [
+  { line: 3, content: "   i ← j ← 1", tokens: [
     { type: "plain", text: "   " },
-    { type: "variable", text: "j" },
-    { type: "operator", text: " ← " },
-    { type: "variable", text: "MPnext" },
-    { type: "bracket", text: "[" },
-    { type: "number", text: "1" },
-    { type: "bracket", text: "]" },
-    { type: "operator", text: " ← " },
-    { type: "number", text: "0" },
-  ]},
-  { line: 4, content: "   for i ← 1 to m do", tokens: [
-    { type: "plain", text: "   " },
-    { type: "keyword", text: "for" },
-    { type: "plain", text: " " },
     { type: "variable", text: "i" },
     { type: "operator", text: " ← " },
+    { type: "variable", text: "j" },
+    { type: "operator", text: " ← " },
     { type: "number", text: "1" },
-    { type: "plain", text: " " },
-    { type: "keyword", text: "to" },
-    { type: "plain", text: " " },
-    { type: "variable", text: "m" },
-    { type: "plain", text: " " },
-    { type: "keyword", text: "do" },
   ]},
-  { line: 5, content: "      while j > 0 and p[i] ≠ p[j] do j ← MPnext[j]", tokens: [
-    { type: "plain", text: "      " },
+  { line: 4, content: "   while j ≤ n do", tokens: [
+    { type: "plain", text: "   " },
     { type: "keyword", text: "while" },
     { type: "plain", text: " " },
     { type: "variable", text: "j" },
+    { type: "operator", text: " ≤ " },
+    { type: "variable", text: "n" },
+    { type: "plain", text: " " },
+    { type: "keyword", text: "do" },
+  ]},
+  { line: 5, content: "      while (i = m + 1) or (i > 0 and p[i] ≠ t[j]) do i ← MPnext[i]", tokens: [
+    { type: "plain", text: "      " },
+    { type: "keyword", text: "while" },
+    { type: "plain", text: " " },
+    { type: "bracket", text: "(" },
+    { type: "variable", text: "i" },
+    { type: "operator", text: " = " },
+    { type: "variable", text: "m" },
+    { type: "operator", text: " + " },
+    { type: "number", text: "1" },
+    { type: "bracket", text: ")" },
+    { type: "plain", text: " " },
+    { type: "keyword", text: "or" },
+    { type: "plain", text: " " },
+    { type: "bracket", text: "(" },
+    { type: "variable", text: "i" },
     { type: "operator", text: " > " },
     { type: "number", text: "0" },
     { type: "plain", text: " " },
@@ -234,38 +254,55 @@ const algorithmCode = [
     { type: "variable", text: "i" },
     { type: "bracket", text: "]" },
     { type: "operator", text: " ≠ " },
-    { type: "variable", text: "p" },
+    { type: "variable", text: "t" },
     { type: "bracket", text: "[" },
     { type: "variable", text: "j" },
     { type: "bracket", text: "]" },
+    { type: "bracket", text: ")" },
     { type: "plain", text: " " },
     { type: "keyword", text: "do" },
     { type: "plain", text: " " },
-    { type: "variable", text: "j" },
+    { type: "variable", text: "i" },
     { type: "operator", text: " ← " },
-    { type: "variable", text: "MPnext" },
-    { type: "bracket", text: "[" },
-    { type: "variable", text: "j" },
-    { type: "bracket", text: "]" },
-  ]},
-  { line: 6, content: "      j ← j + 1", tokens: [
-    { type: "plain", text: "      " },
-    { type: "variable", text: "j" },
-    { type: "operator", text: " ← " },
-    { type: "variable", text: "j" },
-    { type: "operator", text: " + " },
-    { type: "number", text: "1" },
-  ]},
-  { line: 7, content: "      MPnext[i + 1] ← j", tokens: [
-    { type: "plain", text: "      " },
     { type: "variable", text: "MPnext" },
     { type: "bracket", text: "[" },
     { type: "variable", text: "i" },
+    { type: "bracket", text: "]" },
+  ]},
+  { line: 6, content: "      i ← i + 1; j ← j + 1", tokens: [
+    { type: "plain", text: "      " },
+    { type: "variable", text: "i" },
+    { type: "operator", text: " ← " },
+    { type: "variable", text: "i" },
     { type: "operator", text: " + " },
     { type: "number", text: "1" },
-    { type: "bracket", text: "]" },
+    { type: "plain", text: "; " },
+    { type: "variable", text: "j" },
     { type: "operator", text: " ← " },
     { type: "variable", text: "j" },
+    { type: "operator", text: " + " },
+    { type: "number", text: "1" },
+  ]},
+  { line: 7, content: "      if i = m + 1 then Output(j − i + 1)", tokens: [
+    { type: "plain", text: "      " },
+    { type: "keyword", text: "if" },
+    { type: "plain", text: " " },
+    { type: "variable", text: "i" },
+    { type: "operator", text: " = " },
+    { type: "variable", text: "m" },
+    { type: "operator", text: " + " },
+    { type: "number", text: "1" },
+    { type: "plain", text: " " },
+    { type: "keyword", text: "then" },
+    { type: "plain", text: " " },
+    { type: "function", text: "Output" },
+    { type: "bracket", text: "(" },
+    { type: "variable", text: "j" },
+    { type: "operator", text: " − " },
+    { type: "variable", text: "i" },
+    { type: "operator", text: " + " },
+    { type: "number", text: "1" },
+    { type: "bracket", text: ")" },
   ]},
   { line: 8, content: "   od", tokens: [
     { type: "plain", text: "   " },
@@ -291,19 +328,20 @@ const tokenColors: Record<string, string> = {
 // MAIN COMPONENT
 // ============================================
 
-export default function MPNextPage() {
-  const [pattern, setPattern] = useState("abacabacab");
-  const [inputValue, setInputValue] = useState("abacabacab");
+export default function MPPage() {
+  const [text, setText] = useState("abacabacababacabacab");
+  const [pattern, setPattern] = useState("abacab");
+  const [textInput, setTextInput] = useState("abacabacababacabacab");
+  const [patternInput, setPatternInput] = useState("abacab");
   const [steps, setSteps] = useState<Step[]>([]);
   const [currentStepIndex, setCurrentStepIndex] = useState(-1);
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(2);
-  const [codeWidth, setCodeWidth] = useState(420);
+  const [codeWidth, setCodeWidth] = useState(480);
   const [isResizing, setIsResizing] = useState(false);
   
   const playIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const codeContainerRef = useRef<HTMLDivElement>(null);
-  const resizeRef = useRef<HTMLDivElement>(null);
 
   const currentStep = currentStepIndex >= 0 ? steps[currentStepIndex] : null;
 
@@ -378,18 +416,29 @@ export default function MPNextPage() {
   }, [steps.length, stopPlaying]);
 
   const startVisualization = useCallback(() => {
-    const trimmedPattern = inputValue.trim();
-    if (!trimmedPattern || trimmedPattern.length < 2) {
-      alert("Please enter a pattern with at least 2 characters.");
+    const trimmedText = textInput.trim();
+    const trimmedPattern = patternInput.trim();
+    
+    if (!trimmedText || trimmedText.length < 1) {
+      alert("Please enter a text string.");
+      return;
+    }
+    if (!trimmedPattern || trimmedPattern.length < 1) {
+      alert("Please enter a pattern string.");
+      return;
+    }
+    if (trimmedPattern.length > trimmedText.length) {
+      alert("Pattern cannot be longer than text.");
       return;
     }
 
     stopPlaying();
+    setText(trimmedText);
     setPattern(trimmedPattern);
-    const newSteps = computeAllSteps(trimmedPattern);
+    const newSteps = computeAllSteps(trimmedText, trimmedPattern);
     setSteps(newSteps);
     setCurrentStepIndex(0);
-  }, [inputValue, stopPlaying]);
+  }, [textInput, patternInput, stopPlaying]);
 
   const resetVisualization = useCallback(() => {
     stopPlaying();
@@ -471,20 +520,31 @@ export default function MPNextPage() {
         <Link href="/algorithms" className="flex items-center gap-2 group">
           <span className="text-[var(--accent-green)]">$</span>
           <span className="text-[var(--text-secondary)]">./</span>
-          <span className="text-[var(--text-primary)]">mpnext</span>
+          <span className="text-[var(--text-primary)]">mp-search</span>
         </Link>
 
         {/* Input Controls */}
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2">
+            <span className="text-[var(--text-muted)] text-sm">text:</span>
+            <input
+              type="text"
+              value={textInput}
+              onChange={(e) => setTextInput(e.target.value)}
+              onKeyPress={(e) => e.key === "Enter" && startVisualization()}
+              placeholder="enter text..."
+              className="px-3 py-1.5 text-sm bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] w-48 focus:outline-none focus:border-[var(--accent-green)] transition-colors"
+            />
+          </div>
+          <div className="flex items-center gap-2">
             <span className="text-[var(--text-muted)] text-sm">pattern:</span>
             <input
               type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              value={patternInput}
+              onChange={(e) => setPatternInput(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && startVisualization()}
               placeholder="enter pattern..."
-              className="px-3 py-1.5 text-sm bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] w-40 focus:outline-none focus:border-[var(--accent-green)] transition-colors"
+              className="px-3 py-1.5 text-sm bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] w-32 focus:outline-none focus:border-[var(--accent-magenta)] transition-colors"
             />
           </div>
           <button
@@ -600,7 +660,6 @@ export default function MPNextPage() {
           
           {/* Resize Handle */}
           <div
-            ref={resizeRef}
             onMouseDown={() => setIsResizing(true)}
             className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-[var(--accent-green)]/30 transition-colors"
           />
@@ -608,27 +667,76 @@ export default function MPNextPage() {
 
         {/* Execution Panel */}
         <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 min-w-[300px]">
-          {/* Pattern Display */}
-          <Section title="pattern (1-indexed)">
+          {/* Text Display */}
+          <Section title="text t (1-indexed)">
             {steps.length > 0 ? (
               <>
-                <div className="flex gap-0.5 flex-wrap justify-center">
-                  {pattern.split("").map((char, idx) => {
-                    const oneBasedIdx = idx + 1;
-                    const isI = currentStep?.i === oneBasedIdx;
-                    const isJ = currentStep?.j === oneBasedIdx && currentStep.type !== "init" && currentStep.type !== "end";
-                    const isMatch = currentStep?.comparison === "match" && (isI || isJ);
-                    const isMismatch = currentStep?.comparison === "mismatch" && (isI || isJ);
+                <div className="flex gap-0.5 flex-wrap justify-center overflow-x-auto pb-1">
+                  {text.split("").map((char, idx) => {
+                    const oneIdx = idx + 1;
+                    const isJ = currentStep?.j === oneIdx && currentStep.type !== "init" && currentStep.type !== "end";
+                    const isInMatch = currentStep?.matches.some(
+                      pos => oneIdx >= pos && oneIdx < pos + pattern.length
+                    );
 
                     return (
                       <div
                         key={idx}
-                        className={`w-10 h-12 flex flex-col items-center justify-center border transition-all relative ${
-                          isI && isJ
+                        className={`w-8 h-10 flex flex-col items-center justify-center border transition-all relative ${
+                          isJ
                             ? "border-[var(--accent-green)] bg-[var(--accent-green)]/10"
-                            : isI
-                            ? "border-[var(--accent-green)] bg-[var(--accent-green)]/10"
-                            : isJ
+                            : isInMatch
+                            ? "border-[var(--accent-green)] bg-[var(--accent-green)]/15"
+                            : "border-[var(--border-color)] bg-[var(--bg-secondary)]"
+                        }`}
+                      >
+                        <span className="text-[0.5rem] text-[var(--text-muted)] absolute top-0">
+                          {oneIdx}
+                        </span>
+                        <span className="text-sm">{char}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="flex gap-0.5 justify-center mt-1 overflow-x-auto">
+                  {text.split("").map((_, idx) => {
+                    const oneIdx = idx + 1;
+                    const isJ = currentStep?.j === oneIdx && currentStep.type !== "init" && currentStep.type !== "end";
+                    
+                    return (
+                      <div
+                        key={idx}
+                        className={`w-8 text-center text-xs h-3 ${
+                          isJ ? "text-[var(--accent-green)]" : ""
+                        }`}
+                      >
+                        {isJ ? "j" : ""}
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              <EmptyState />
+            )}
+          </Section>
+
+          {/* Pattern Display */}
+          <Section title="pattern p (1-indexed)">
+            {steps.length > 0 ? (
+              <>
+                <div className="flex gap-0.5 flex-wrap justify-center">
+                  {pattern.split("").map((char, idx) => {
+                    const oneIdx = idx + 1;
+                    const isI = currentStep?.i === oneIdx && currentStep.type !== "init" && currentStep.type !== "end";
+                    const isMatch = currentStep?.comparison === "match" && isI;
+                    const isMismatch = currentStep?.comparison === "mismatch" && isI;
+
+                    return (
+                      <div
+                        key={idx}
+                        className={`w-8 h-10 flex flex-col items-center justify-center border transition-all relative ${
+                          isI
                             ? "border-[var(--accent-magenta)] bg-[var(--accent-magenta)]/10"
                             : "border-[var(--border-color)] bg-[var(--bg-secondary)]"
                         } ${
@@ -637,44 +745,36 @@ export default function MPNextPage() {
                           isMismatch ? "border-[var(--accent-red)] bg-[var(--accent-red)]/10" : ""
                         }`}
                       >
-                        <span className="text-[0.6rem] text-[var(--text-muted)] absolute top-0.5">
-                          {oneBasedIdx}
+                        <span className="text-[0.5rem] text-[var(--text-muted)] absolute top-0">
+                          {oneIdx}
                         </span>
-                        <span className="text-base">{char}</span>
+                        <span className="text-sm">{char}</span>
                       </div>
                     );
                   })}
                 </div>
-                {/* Pointer Labels */}
                 <div className="flex gap-0.5 justify-center mt-1">
                   {pattern.split("").map((_, idx) => {
-                    const oneBasedIdx = idx + 1;
-                    const isI = currentStep?.i === oneBasedIdx;
-                    const isJ = currentStep?.j === oneBasedIdx && currentStep.type !== "init" && currentStep.type !== "end";
+                    const oneIdx = idx + 1;
+                    const isI = currentStep?.i === oneIdx && currentStep.type !== "init" && currentStep.type !== "end";
                     
                     return (
                       <div
                         key={idx}
-                        className={`w-10 text-center text-xs h-4 ${
-                          isI && isJ
-                            ? "text-[var(--accent-green)]"
-                            : isI
-                            ? "text-[var(--accent-green)]"
-                            : isJ
-                            ? "text-[var(--accent-magenta)]"
-                            : ""
+                        className={`w-8 text-center text-xs h-3 ${
+                          isI ? "text-[var(--accent-magenta)]" : ""
                         }`}
                       >
-                        {isI && isJ ? "i,j" : isI ? "i" : isJ ? "j" : ""}
+                        {isI ? "i" : ""}
                       </div>
                     );
                   })}
                 </div>
-                {/* Legend */}
                 <div className="flex gap-4 justify-center flex-wrap mt-2 text-xs text-[var(--text-muted)]">
-                  <span><span className="text-[var(--accent-green)]">■</span> i</span>
-                  <span><span className="text-[var(--accent-magenta)]">■</span> j</span>
+                  <span><span className="text-[var(--accent-green)]">■</span> j (text)</span>
+                  <span><span className="text-[var(--accent-magenta)]">■</span> i (pattern)</span>
                   <span><span className="text-[var(--accent-green)]">✓</span> match</span>
+                  <span><span className="text-[var(--accent-red)]">✗</span> mismatch</span>
                 </div>
               </>
             ) : (
@@ -684,16 +784,21 @@ export default function MPNextPage() {
 
           {/* Variables */}
           <Section title="variables">
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-6 gap-2">
               <VariableCard
                 name="i"
                 value={currentStep?.i ?? "—"}
-                active={currentStep?.type === "for"}
+                active={["inner-while", "inner-while-exit", "increment"].includes(currentStep?.type || "")}
               />
               <VariableCard
                 name="j"
                 value={currentStep?.j ?? "—"}
-                active={["while", "while-exit", "increment", "no-increment"].includes(currentStep?.type || "")}
+                active={["outer-while", "increment"].includes(currentStep?.type || "")}
+              />
+              <VariableCard
+                name="n"
+                value={text.length || "—"}
+                active={false}
               />
               <VariableCard
                 name="m"
@@ -701,47 +806,77 @@ export default function MPNextPage() {
                 active={false}
               />
               <VariableCard
-                name="p[i]"
-                value={currentStep?.pI ? `'${currentStep.pI}'` : "—"}
+                name="t[j]"
+                value={currentStep?.tChar ? `'${currentStep.tChar}'` : "—"}
                 active={false}
               />
               <VariableCard
-                name="p[j]"
-                value={currentStep?.pJ ? `'${currentStep.pJ}'` : "—"}
+                name="p[i]"
+                value={currentStep?.pChar ? `'${currentStep.pChar}'` : "—"}
                 active={false}
               />
             </div>
           </Section>
 
           {/* MPNext Array */}
-          <Section title="MPNext array (1-indexed)">
-            {steps.length > 0 ? (
-              <div className="flex gap-0.5 flex-wrap justify-center">
-                {Array.from({ length: pattern.length + 1 }, (_, i) => i + 1).map((idx) => {
-                  const value = currentStep?.mpnextSnapshot[idx];
-                  const isCurrent = currentStep?.mpnextIdx === idx;
-                  const isFilled = value !== null && value !== undefined;
+          <Section title="MPNext array (precomputed)">
+            {steps.length > 0 && currentStep ? (
+              <div className="flex flex-col items-center gap-1">
+                <div className="flex gap-0.5 justify-center">
+                  {currentStep.mpnext.slice(1, pattern.length + 2).map((_, idx) => {
+                    const realIdx = idx + 1;
+                    const char = realIdx <= pattern.length ? pattern[realIdx - 1] : "—";
+                    return (
+                      <div key={idx} className="w-8 text-center text-xs text-[var(--text-muted)]">
+                        {char}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="flex gap-0.5 flex-wrap justify-center">
+                  {currentStep.mpnext.slice(1, pattern.length + 2).map((value, idx) => {
+                    const realIdx = idx + 1;
+                    const isUsed = currentStep.type === "inner-while" && currentStep.i === realIdx;
 
-                  return (
-                    <div
-                      key={idx}
-                      className={`w-10 h-12 flex flex-col items-center justify-center border transition-all ${
-                        isCurrent
-                          ? "border-[var(--accent-green)] bg-[var(--accent-green)]/10"
-                          : "border-[var(--border-color)] bg-[var(--bg-secondary)]"
-                      }`}
-                    >
-                      <span className="text-[0.55rem] text-[var(--text-muted)]">[{idx}]</span>
-                      <span
-                        className={`text-base ${
-                          isFilled ? "text-[var(--accent-green)]" : "text-[var(--text-muted)]"
+                    return (
+                      <div
+                        key={idx}
+                        className={`w-8 h-10 flex flex-col items-center justify-center border transition-all ${
+                          isUsed
+                            ? "border-[var(--accent-yellow)] bg-[var(--accent-yellow)]/10"
+                            : "border-[var(--border-color)] bg-[var(--bg-secondary)]"
                         }`}
                       >
-                        {isFilled ? value : "—"}
-                      </span>
+                        <span className="text-[0.5rem] text-[var(--text-muted)]">[{realIdx}]</span>
+                        <span className={`text-sm ${value !== undefined ? "text-[var(--accent-green)]" : "text-[var(--text-muted)]"}`}>
+                          {value !== undefined ? value : "—"}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <EmptyState />
+            )}
+          </Section>
+
+          {/* Matches Found */}
+          <Section title="matches found">
+            {steps.length > 0 && currentStep ? (
+              <div className="flex flex-wrap gap-2 justify-center min-h-[32px] items-center">
+                {currentStep.matches.length > 0 ? (
+                  currentStep.matches.map((pos, idx) => (
+                    <div
+                      key={idx}
+                      className="px-3 py-1 border border-[var(--accent-green)] text-[var(--accent-green)] text-sm"
+                    >
+                      pos {pos}
                     </div>
-                  );
-                })}
+                  ))
+                ) : (
+                  <span className="text-[var(--text-muted)] text-sm">no matches yet</span>
+                )}
               </div>
             ) : (
               <EmptyState />
@@ -760,72 +895,9 @@ export default function MPNextPage() {
                 </>
               ) : (
                 <span className="text-[var(--text-muted)]">
-                  enter a pattern and click &quot;run&quot; to begin...
+                  enter text and pattern, then click &quot;run&quot; to begin...
                 </span>
               )}
-            </div>
-          </Section>
-
-          {/* Step History Table */}
-          <Section title="step history" className="flex-1">
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-sm">
-                <thead>
-                  <tr className="text-[var(--text-muted)] text-xs uppercase">
-                    <th className="p-2 text-center border-b border-[var(--border-color)]">step</th>
-                    <th className="p-2 text-center border-b border-[var(--border-color)]">i</th>
-                    <th className="p-2 text-center border-b border-[var(--border-color)]">p[i]</th>
-                    <th className="p-2 text-center border-b border-[var(--border-color)]">j_start</th>
-                    <th className="p-2 text-center border-b border-[var(--border-color)]">j_end</th>
-                    <th className="p-2 text-center border-b border-[var(--border-color)]">mpnext</th>
-                    <th className="p-2 text-left border-b border-[var(--border-color)]">action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {steps
-                    .filter((s, idx) => idx <= currentStepIndex && (s.type === "init" || s.type === "assign" || s.type === "end"))
-                    .map((step, idx) => {
-                      const stepIndex = steps.indexOf(step);
-                      const isCurrent = stepIndex === currentStepIndex ||
-                        (currentStepIndex > stepIndex && 
-                         (idx === steps.filter((s, i) => i <= currentStepIndex && (s.type === "init" || s.type === "assign" || s.type === "end")).length - 1));
-
-                      return (
-                        <tr
-                          key={stepIndex}
-                          className={isCurrent ? "bg-[var(--line-highlight)]" : ""}
-                        >
-                          {step.type === "init" ? (
-                            <>
-                              <td className="p-2 text-center border-b border-[var(--border-color)] text-[var(--text-muted)]">0</td>
-                              <td className="p-2 text-center border-b border-[var(--border-color)] text-[var(--text-muted)]">—</td>
-                              <td className="p-2 text-center border-b border-[var(--border-color)] text-[var(--text-muted)]">—</td>
-                              <td className="p-2 text-center border-b border-[var(--border-color)] text-[var(--text-muted)]">0</td>
-                              <td className="p-2 text-center border-b border-[var(--border-color)] text-[var(--text-muted)]">0</td>
-                              <td className="p-2 text-center border-b border-[var(--border-color)] text-[var(--accent-green)]">[1]=0</td>
-                              <td className="p-2 text-left border-b border-[var(--border-color)] text-[var(--text-secondary)] text-xs">init</td>
-                            </>
-                          ) : step.type === "assign" ? (
-                            <>
-                              <td className="p-2 text-center border-b border-[var(--border-color)] text-[var(--text-muted)]">{idx}</td>
-                              <td className="p-2 text-center border-b border-[var(--border-color)] text-[var(--accent-green)]">{step.i}</td>
-                              <td className="p-2 text-center border-b border-[var(--border-color)] text-[var(--text-secondary)]">{step.pI}</td>
-                              <td className="p-2 text-center border-b border-[var(--border-color)] text-[var(--text-muted)]">{step.jStart}</td>
-                              <td className="p-2 text-center border-b border-[var(--border-color)] text-[var(--accent-magenta)]">{step.jEnd}</td>
-                              <td className="p-2 text-center border-b border-[var(--border-color)] text-[var(--accent-green)]">[{step.mpnextIdx}]={step.mpnextVal}</td>
-                              <td className="p-2 text-left border-b border-[var(--border-color)] text-[var(--text-secondary)] text-xs truncate max-w-[200px]">{step.action}</td>
-                            </>
-                          ) : (
-                            <>
-                              <td className="p-2 text-center border-b border-[var(--border-color)] text-[var(--accent-green)]">✓</td>
-                              <td colSpan={6} className="p-2 text-center border-b border-[var(--border-color)] text-[var(--accent-green)]">complete</td>
-                            </>
-                          )}
-                        </tr>
-                      );
-                    })}
-                </tbody>
-              </table>
             </div>
           </Section>
         </div>

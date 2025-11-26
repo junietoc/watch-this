@@ -3,13 +3,8 @@
 /*
   📋 ALGORITHMS LISTING PAGE
   
-  This page shows all available algorithms in a grid format.
+  Terminal-inspired clean design.
   URL: /algorithms
-  
-  NEXT.JS ROUTING:
-  - Folder structure = URL structure
-  - src/app/algorithms/page.tsx → /algorithms
-  - This is called "file-based routing"
 */
 
 import Link from "next/link";
@@ -20,27 +15,33 @@ const categories = [
   {
     name: "String Matching",
     description: "Algorithms for finding patterns within text",
-    icon: "🔤",
     algorithms: [
       {
         id: "mpnext",
         name: "MPNext",
-        description: "Compute the failure function (prefix function) for Morris-Pratt pattern matching. This preprocessing step is essential for efficient string searching.",
+        description: "Compute the failure function (prefix function) for Morris-Pratt pattern matching.",
         complexity: "O(m)",
+        status: "available" as const,
+      },
+      {
+        id: "mp",
+        name: "MP Search",
+        description: "Morris-Pratt algorithm for finding all occurrences of a pattern in text.",
+        complexity: "O(n + m)",
         status: "available" as const,
       },
       {
         id: "kmp",
         name: "KMP Search",
-        description: "Knuth-Morris-Pratt algorithm for finding pattern occurrences in text using the failure function.",
+        description: "Knuth-Morris-Pratt algorithm with improved failure function.",
         complexity: "O(n + m)",
         status: "coming-soon" as const,
       },
       {
         id: "boyer-moore",
         name: "Boyer-Moore",
-        description: "Efficient string searching using bad character and good suffix heuristics.",
-        complexity: "O(nm) worst, O(n/m) best",
+        description: "String searching using bad character and good suffix heuristics.",
+        complexity: "O(nm) worst",
         status: "coming-soon" as const,
       },
     ],
@@ -48,13 +49,12 @@ const categories = [
   {
     name: "Sorting",
     description: "Algorithms for ordering elements",
-    icon: "📊",
     algorithms: [
       {
         id: "quicksort",
         name: "Quicksort",
         description: "Divide-and-conquer sorting using pivot partitioning.",
-        complexity: "O(n log n) average",
+        complexity: "O(n log n)",
         status: "coming-soon" as const,
       },
       {
@@ -69,19 +69,18 @@ const categories = [
   {
     name: "Graph Algorithms",
     description: "Algorithms for traversing and analyzing graphs",
-    icon: "🕸️",
     algorithms: [
       {
         id: "dijkstra",
-        name: "Dijkstra's",
-        description: "Find shortest paths from a source vertex to all other vertices.",
-        complexity: "O((V + E) log V)",
+        name: "Dijkstra",
+        description: "Find shortest paths from a source vertex.",
+        complexity: "O((V+E)logV)",
         status: "coming-soon" as const,
       },
       {
         id: "bfs",
         name: "BFS",
-        description: "Breadth-first search for level-order graph traversal.",
+        description: "Breadth-first search for level-order traversal.",
         complexity: "O(V + E)",
         status: "coming-soon" as const,
       },
@@ -92,75 +91,70 @@ const categories = [
 export default function AlgorithmsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  // Filter algorithms based on selected category
   const displayCategories = selectedCategory
     ? categories.filter((c) => c.name === selectedCategory)
     : categories;
 
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)]">
+    <div className="min-h-screen bg-[var(--bg-primary)] font-mono">
       {/* Header */}
-      <header className="border-b border-[var(--border-color)] bg-[var(--bg-secondary)]/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <header className="border-b border-[var(--border-color)] bg-[var(--bg-secondary)] sticky top-0 z-50">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center text-lg font-bold text-white shadow-lg shadow-cyan-500/25 group-hover:scale-105 transition-transform">
-              λ
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
-              Watch This
-            </span>
+            <span className="text-[var(--accent-green)]">$</span>
+            <span className="text-[var(--text-primary)]">watch_this</span>
+            <span className="text-[var(--text-muted)]">/</span>
+            <span className="text-[var(--text-secondary)]">algorithms</span>
           </Link>
 
-          <nav className="flex items-center gap-6">
-            <span className="text-[var(--text-primary)] font-medium">
-              Algorithms
-            </span>
+          <nav className="flex items-center gap-6 text-sm">
             <Link
               href="/"
-              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+              className="text-[var(--text-secondary)] hover:text-[var(--accent-green)] transition-colors"
             >
-              Home
+              cd ~
             </Link>
           </nav>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-12">
+      <main className="max-w-5xl mx-auto px-6 py-12">
         {/* Page Title */}
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold text-[var(--text-primary)] mb-4">
+        <div className="mb-10">
+          <div className="text-sm text-[var(--text-muted)] mb-2">
+            $ ls -la ./algorithms
+          </div>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
             Algorithm Library
           </h1>
-          <p className="text-lg text-[var(--text-secondary)] max-w-2xl">
-            Choose an algorithm to visualize. Step through each operation and see
-            exactly how it works.
+          <p className="text-[var(--text-secondary)]">
+            Select an algorithm to visualize. Step through each operation.
           </p>
         </div>
 
-        {/* Category Filter Pills */}
-        <div className="flex flex-wrap gap-3 mb-10">
+        {/* Category Filter */}
+        <div className="flex flex-wrap gap-2 mb-10 text-sm">
           <button
             onClick={() => setSelectedCategory(null)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+            className={`px-3 py-1.5 border transition-all ${
               selectedCategory === null
-                ? "bg-gradient-to-r from-cyan-500 to-purple-600 text-white shadow-lg shadow-cyan-500/25"
-                : "bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-color)]"
+                ? "border-[var(--accent-green)] text-[var(--accent-green)] bg-[var(--accent-green)]/10"
+                : "border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]"
             }`}
           >
-            All Categories
+            all
           </button>
           {categories.map((category) => (
             <button
               key={category.name}
               onClick={() => setSelectedCategory(category.name)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
+              className={`px-3 py-1.5 border transition-all ${
                 selectedCategory === category.name
-                  ? "bg-gradient-to-r from-cyan-500 to-purple-600 text-white shadow-lg shadow-cyan-500/25"
-                  : "bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-color)]"
+                  ? "border-[var(--accent-green)] text-[var(--accent-green)] bg-[var(--accent-green)]/10"
+                  : "border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]"
               }`}
             >
-              <span>{category.icon}</span>
-              {category.name}
+              {category.name.toLowerCase().replace(" ", "-")}
             </button>
           ))}
         </div>
@@ -170,31 +164,28 @@ export default function AlgorithmsPage() {
           {displayCategories.map((category) => (
             <section key={category.name}>
               {/* Category Header */}
-              <div className="flex items-center gap-3 mb-6">
-                <span className="text-3xl">{category.icon}</span>
-                <div>
-                  <h2 className="text-2xl font-bold text-[var(--text-primary)]">
-                    {category.name}
-                  </h2>
-                  <p className="text-sm text-[var(--text-secondary)]">
-                    {category.description}
-                  </p>
-                </div>
+              <div className="mb-4">
+                <h2 className="text-lg font-medium text-[var(--text-primary)]">
+                  # {category.name}
+                </h2>
+                <p className="text-sm text-[var(--text-muted)]">
+                  {category.description}
+                </p>
               </div>
 
-              {/* Algorithm Cards Grid */}
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Algorithm Cards */}
+              <div className="grid md:grid-cols-2 gap-3">
                 {category.algorithms.map((algo) => (
-                  <div key={algo.id} className="relative">
+                  <div key={algo.id}>
                     {algo.status === "available" ? (
                       <Link
                         href={`/algorithms/${algo.id}`}
-                        className="block p-6 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:border-cyan-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10 hover:-translate-y-1 h-full"
+                        className="block p-4 border border-[var(--border-color)] bg-[var(--bg-secondary)] hover:border-[var(--accent-green)] transition-all group"
                       >
                         <AlgorithmCardContent algo={algo} />
                       </Link>
                     ) : (
-                      <div className="p-6 rounded-2xl bg-[var(--bg-secondary)]/50 border border-dashed border-[var(--border-color)] h-full opacity-60">
+                      <div className="p-4 border border-dashed border-[var(--border-color)] opacity-50">
                         <AlgorithmCardContent algo={algo} />
                       </div>
                     )}
@@ -205,37 +196,31 @@ export default function AlgorithmsPage() {
           ))}
         </div>
 
-        {/* Info Box */}
-        <div className="mt-16 p-6 rounded-2xl bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border border-cyan-500/20">
-          <div className="flex items-start gap-4">
-            <div className="text-3xl">💡</div>
-            <div>
-              <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">
-                Learning Tips
-              </h3>
-              <ul className="text-[var(--text-secondary)] space-y-2">
-                <li className="flex items-center gap-2">
-                  <span className="text-cyan-400">→</span>
-                  Use the step-by-step controls to understand each operation
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-cyan-400">→</span>
-                  Try different inputs to see how the algorithm behaves
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-cyan-400">→</span>
-                  Watch the code highlighting to follow the execution flow
-                </li>
-              </ul>
-            </div>
+        {/* Tips */}
+        <div className="mt-16 p-5 border border-[var(--border-color)] bg-[var(--bg-secondary)]">
+          <div className="text-[var(--text-muted)] text-sm mb-3">
+            # tips
           </div>
+          <ul className="text-sm text-[var(--text-secondary)] space-y-2">
+            <li className="flex items-center gap-2">
+              <span className="text-[var(--accent-green)]">→</span>
+              Use arrow keys or h/l to step through the algorithm
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-[var(--accent-green)]">→</span>
+              Press space to play/pause auto-stepping
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-[var(--accent-green)]">→</span>
+              Try different inputs to understand edge cases
+            </li>
+          </ul>
         </div>
       </main>
     </div>
   );
 }
 
-// Extracted card content component
 function AlgorithmCardContent({
   algo,
 }: {
@@ -249,40 +234,34 @@ function AlgorithmCardContent({
 }) {
   return (
     <>
-      {/* Status Badge */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-2">
         <span
-          className={`px-3 py-1 rounded-full text-xs font-medium ${
+          className={`text-xs px-2 py-0.5 ${
             algo.status === "available"
-              ? "bg-green-500/20 text-green-400 border border-green-500/30"
-              : "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
+              ? "text-[var(--accent-green)] border border-[var(--accent-green)]/30"
+              : "text-[var(--text-muted)] border border-[var(--border-color)]"
           }`}
         >
-          {algo.status === "available" ? "Available" : "Coming Soon"}
+          {algo.status === "available" ? "ready" : "soon"}
         </span>
-        <span className="text-xs font-mono text-[var(--text-muted)]">
+        <span className="text-xs text-[var(--text-muted)] font-mono">
           {algo.complexity}
         </span>
       </div>
 
-      {/* Algorithm Name */}
-      <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">
+      <h3 className="text-[var(--text-primary)] font-medium mb-1">
         {algo.name}
       </h3>
 
-      {/* Description */}
-      <p className="text-sm text-[var(--text-secondary)] line-clamp-3">
+      <p className="text-xs text-[var(--text-secondary)] line-clamp-2">
         {algo.description}
       </p>
 
-      {/* CTA */}
       {algo.status === "available" && (
-        <div className="mt-4 flex items-center gap-2 text-cyan-400 text-sm font-medium">
-          <span>Start Visualizing</span>
-          <span>→</span>
+        <div className="mt-3 text-xs text-[var(--accent-green)] opacity-0 group-hover:opacity-100 transition-opacity">
+          run →
         </div>
       )}
     </>
   );
 }
-
