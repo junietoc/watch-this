@@ -113,49 +113,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Features Section */}
-        <section 
-          className={`max-w-5xl mx-auto px-6 py-16 transition-all duration-500 delay-100 ${
-            mounted ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          <div className="text-sm text-[var(--text-muted)] mb-8">
-            # features
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="p-5 border border-[var(--border-color)] bg-[var(--bg-secondary)]">
-              <div className="text-[var(--accent-green)] mb-3 text-lg">01</div>
-              <h3 className="text-[var(--text-primary)] font-medium mb-2">
-                Visual Learning
-              </h3>
-              <p className="text-sm text-[var(--text-secondary)]">
-                See every step with highlighted code and animated data structures.
-              </p>
-            </div>
-
-            <div className="p-5 border border-[var(--border-color)] bg-[var(--bg-secondary)]">
-              <div className="text-[var(--accent-green)] mb-3 text-lg">02</div>
-              <h3 className="text-[var(--text-primary)] font-medium mb-2">
-                Control the Pace
-              </h3>
-              <p className="text-sm text-[var(--text-secondary)]">
-                Step forward, backward, or autoplay at your preferred speed.
-              </p>
-            </div>
-
-            <div className="p-5 border border-[var(--border-color)] bg-[var(--bg-secondary)]">
-              <div className="text-[var(--accent-green)] mb-3 text-lg">03</div>
-              <h3 className="text-[var(--text-primary)] font-medium mb-2">
-                Custom Input
-              </h3>
-              <p className="text-sm text-[var(--text-secondary)]">
-                Test algorithms with your own data to understand edge cases.
-              </p>
-            </div>
-          </div>
-        </section>
-
         {/* Available Algorithms Section */}
         <section 
           className={`max-w-5xl mx-auto px-6 py-16 transition-all duration-500 delay-200 ${
