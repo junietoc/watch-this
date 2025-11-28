@@ -58,6 +58,13 @@ const categories = [
         complexity: "O(nm) worst",
         status: "available" as const,
       },
+      {
+        id: "rabin-karp",
+        name: "Rabin-Karp",
+        description: "String matching using rolling hash and modular arithmetic for efficient pattern search.",
+        complexity: "O(n + m)",
+        status: "available" as const,
+      },
     ],
   },
   {
@@ -96,7 +103,7 @@ const categories = [
         name: "BFS",
         description: "Breadth-first search for level-order traversal.",
         complexity: "O(V + E)",
-        status: "coming-soon" as const,
+        status: "available" as const,
       },
     ],
   },

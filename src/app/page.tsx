@@ -53,6 +53,13 @@ const algorithms = [
     description: "Boyer-Moore search with right-to-left comparison",
     icon: "←",
   },
+  {
+    id: "bfs",
+    name: "BFS",
+    category: "Graph Algorithms",
+    description: "Breadth-first search for level-order graph traversal",
+    icon: "◎",
+  },
 ];
 
 export default function Home() {
