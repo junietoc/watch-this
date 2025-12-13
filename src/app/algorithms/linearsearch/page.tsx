@@ -785,7 +785,7 @@ export default function LinearSearchPage() {
           {/* Comparison Detail */}
           <Section title="current comparison">
             <div className="flex items-center justify-center gap-8 min-h-[60px]">
-              {currentStep?.checking !== null ? (
+              {currentStep && currentStep.checking !== null ? (
                 <>
                   <div className="text-center">
                     <div className="text-xs text-[var(--text-muted)] mb-1">A[{currentStep.i}]</div>
