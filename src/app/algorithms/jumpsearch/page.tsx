@@ -849,7 +849,7 @@ export default function JumpSearchPage() {
                   const blockStart = blockIdx * jumpSize;
                   const blockEnd = Math.min((blockIdx + 1) * jumpSize - 1, displayArray.length - 1);
                   const isActiveBlock = currentStep?.blockStart === blockStart || 
-                    (currentStep?.blockStart !== null && blockStart >= currentStep.blockStart && blockStart <= (currentStep.blockEnd ?? 0));
+                    (currentStep !== null && currentStep?.blockStart !== null && blockStart >= (currentStep?.blockStart ?? 0) && blockStart <= (currentStep?.blockEnd ?? 0));
                   
                   return (
                     <div
