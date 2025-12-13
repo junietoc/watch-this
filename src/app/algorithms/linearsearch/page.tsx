@@ -748,7 +748,7 @@ export default function LinearSearchPage() {
                 />
                 <VariableCard
                   name="A[i]"
-                  value={currentStep?.checking !== null ? displayArray[currentStep.checking] : "—"}
+                  value={currentStep !== null && currentStep?.checking !== null ? displayArray[currentStep.checking] : "—"}
                   active={currentStep?.type === "check"}
                 />
                 <VariableCard
