@@ -9,64 +9,42 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
-// Algorithm data
+// Algorithm data (excluding string matching)
 const algorithms = [
-  {
-    id: "mpnext",
-    name: "MPNext",
-    category: "String Matching",
-    description: "Compute the failure function for Morris-Pratt pattern matching",
-    icon: "λ",
-  },
-  {
-    id: "mp",
-    name: "MP Search",
-    category: "String Matching",
-    description: "Find all pattern occurrences in text using Morris-Pratt",
-    icon: "→",
-  },
-  {
-    id: "kmpnext",
-    name: "KMPNext",
-    category: "String Matching",
-    description: "Compute the optimized failure function for Knuth-Morris-Pratt",
-    icon: "κ",
-  },
-  {
-    id: "kmp",
-    name: "KMP Search",
-    category: "String Matching",
-    description: "Find all pattern occurrences using Knuth-Morris-Pratt",
-    icon: "⇒",
-  },
-  {
-    id: "bm-computed",
-    name: "BM ComputeD",
-    category: "String Matching",
-    description: "Compute the D array (good suffix shift) for Boyer-Moore",
-    icon: "Δ",
-  },
-  {
-    id: "bm",
-    name: "BM Search",
-    category: "String Matching",
-    description: "Boyer-Moore search with right-to-left comparison",
-    icon: "←",
-  },
-  {
-    id: "bfs",
-    name: "BFS",
-    category: "Graph Algorithms",
-    description: "Breadth-first search for level-order graph traversal",
-    icon: "◎",
-  },
+  // Sorting
+  { id: "quicksort", name: "Quicksort", category: "Sorting", description: "Divide-and-conquer sorting using pivot partitioning", icon: "⚡" },
+  { id: "mergesort", name: "Merge Sort", category: "Sorting", description: "Stable divide-and-conquer sorting algorithm", icon: "↔" },
+  { id: "bubblesort", name: "Bubble Sort", category: "Sorting", description: "Simple comparison-based sorting with adjacent swaps", icon: "○" },
+  { id: "insertionsort", name: "Insertion Sort", category: "Sorting", description: "Build sorted array by inserting into correct position", icon: "▸" },
+  { id: "selectionsort", name: "Selection Sort", category: "Sorting", description: "Find minimum and swap to front repeatedly", icon: "◇" },
+  // Search
+  { id: "linearsearch", name: "Linear Search", category: "Search", description: "Sequential search checking each element one by one", icon: "→" },
+  { id: "binarysearch", name: "Binary Search", category: "Search", description: "Efficient search by halving the search space", icon: "÷" },
+  { id: "jumpsearch", name: "Jump Search", category: "Search", description: "Search by jumping blocks of √n", icon: "⤳" },
+  // Dynamic Programming
+  { id: "lis", name: "LIS", category: "Dynamic Programming", description: "Find the longest increasing subsequence", icon: "↗" },
+  { id: "edit-distance", name: "Edit Distance", category: "Dynamic Programming", description: "Minimum operations to transform one string to another", icon: "✎" },
+  // Graphs
+  { id: "bfs", name: "BFS", category: "Graphs", description: "Breadth-first search for level-order traversal", icon: "◎" },
+  { id: "dfs", name: "DFS", category: "Graphs", description: "Depth-first search with discovery/finish times", icon: "↓" },
+  { id: "dijkstra", name: "Dijkstra", category: "Graphs", description: "Find shortest paths from a source vertex", icon: "◈" },
+  { id: "prims", name: "Prim's MST", category: "Graphs", description: "Build minimum spanning tree from any vertex", icon: "⊛" },
+  { id: "kruskals", name: "Kruskal's MST", category: "Graphs", description: "Build MST using Union-Find", icon: "⊕" },
 ];
+
+// Fisher-Yates shuffle to get random algorithms
+function getRandomAlgorithms(count: number) {
+  const shuffled = [...algorithms].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count);
+}
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
+  const [featuredAlgorithms, setFeaturedAlgorithms] = useState(algorithms.slice(0, 3));
   
   useEffect(() => {
     setMounted(true);
+    setFeaturedAlgorithms(getRandomAlgorithms(3));
   }, []);
 
   return (
@@ -90,7 +68,7 @@ export default function Home() {
               ./algorithms
             </Link>
             <a 
-              href="https://github.com"
+              href="https://github.com/junietoc"
               target="_blank"
               rel="noopener noreferrer"
               className="text-[var(--text-secondary)] hover:text-[var(--accent-green)] transition-colors"
@@ -141,13 +119,6 @@ export default function Home() {
                 <span className="text-[var(--text-muted)] group-hover:text-[var(--bg-primary)]">$</span>
                 explore --all
               </Link>
-              
-              <Link
-                href="/algorithms/mpnext"
-                className="px-6 py-3 border border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-200"
-              >
-                run mpnext
-              </Link>
             </div>
           </div>
         </section>
@@ -163,7 +134,7 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-4 max-w-3xl">
-            {algorithms.map((algo) => (
+            {featuredAlgorithms.map((algo) => (
               <Link
                 key={algo.id}
                 href={`/algorithms/${algo.id}`}
@@ -191,12 +162,15 @@ export default function Home() {
               </Link>
             ))}
 
-            {/* Coming Soon */}
-            <div className="p-5 border border-dashed border-[var(--border-color)] flex items-center justify-center">
-              <span className="text-[var(--text-muted)] text-sm">
-                more coming soon...
+            {/* View More */}
+            <Link
+              href="/algorithms"
+              className="p-5 border border-dashed border-[var(--border-color)] hover:border-[var(--accent-green)] flex items-center justify-center transition-all duration-200 group"
+            >
+              <span className="text-[var(--text-muted)] group-hover:text-[var(--accent-green)] text-sm">
+                view all {algorithms.length} algorithms →
               </span>
-            </div>
+            </Link>
           </div>
         </section>
 

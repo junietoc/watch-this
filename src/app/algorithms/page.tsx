@@ -13,6 +13,135 @@ import { useState } from "react";
 // Define algorithm categories and their algorithms
 const categories = [
   {
+    name: "Sorting",
+    description: "Algorithms for ordering elements",
+    algorithms: [
+      {
+        id: "quicksort",
+        name: "Quicksort",
+        description: "Divide-and-conquer sorting using pivot partitioning.",
+        complexity: "O(n log n)",
+        status: "available" as const,
+      },
+      {
+        id: "mergesort",
+        name: "Merge Sort",
+        description: "Stable divide-and-conquer sorting algorithm.",
+        complexity: "O(n log n)",
+        status: "available" as const,
+      },
+      {
+        id: "bubblesort",
+        name: "Bubble Sort",
+        description: "Simple comparison-based sorting with adjacent swaps.",
+        complexity: "O(n²)",
+        status: "available" as const,
+      },
+      {
+        id: "insertionsort",
+        name: "Insertion Sort",
+        description: "Build sorted array one element at a time by inserting into correct position.",
+        complexity: "O(n²)",
+        status: "available" as const,
+      },
+      {
+        id: "selectionsort",
+        name: "Selection Sort",
+        description: "Find minimum element and swap to front, repeat for each position.",
+        complexity: "O(n²)",
+        status: "available" as const,
+      },
+    ],
+  },
+  {
+    name: "Search",
+    description: "Algorithms for finding elements in data structures",
+    algorithms: [
+      {
+        id: "linearsearch",
+        name: "Linear Search",
+        description: "Simple sequential search checking each element one by one.",
+        complexity: "O(n)",
+        status: "available" as const,
+      },
+      {
+        id: "binarysearch",
+        name: "Binary Search",
+        description: "Efficient search in sorted arrays by halving the search space.",
+        complexity: "O(log n)",
+        status: "available" as const,
+      },
+      {
+        id: "jumpsearch",
+        name: "Jump Search",
+        description: "Search by jumping blocks of √n, then linear search within block.",
+        complexity: "O(√n)",
+        status: "available" as const,
+      },
+    ],
+  },
+  {
+    name: "Dynamic Programming",
+    description: "Algorithms using optimal substructure and overlapping subproblems",
+    algorithms: [
+      {
+        id: "lis",
+        name: "LIS",
+        description: "Find the longest increasing subsequence in an array.",
+        complexity: "O(n²)",
+        status: "available" as const,
+      },
+      {
+        id: "edit-distance",
+        name: "Edit Distance",
+        description: "Levenshtein distance - minimum operations to transform one string to another.",
+        complexity: "O(mn)",
+        status: "available" as const,
+      },
+    ],
+  },
+  {
+    name: "Graph Algorithms",
+    description: "Algorithms for traversing and analyzing graphs",
+    algorithms: [
+      {
+        id: "bfs",
+        name: "BFS",
+        description: "Breadth-first search for level-order traversal.",
+        complexity: "O(V + E)",
+        status: "available" as const,
+      },
+      {
+        id: "dfs",
+        name: "DFS",
+        description: "Depth-first search with discovery/finish times.",
+        complexity: "O(V + E)",
+        status: "available" as const,
+      },
+      {
+        id: "dijkstra",
+        name: "Dijkstra",
+        description: "Find shortest paths from a source vertex.",
+        complexity: "O((V+E)logV)",
+        status: "available" as const,
+      },
+      {
+        id: "prims",
+        name: "Prim's MST",
+        description: "Build minimum spanning tree from any starting vertex.",
+        complexity: "O(E log V)",
+        status: "available" as const,
+      },
+      {
+        id: "kruskals",
+        name: "Kruskal's MST",
+        description: "Build minimum spanning tree using Union-Find data structure.",
+        complexity: "O(E log E)",
+        status: "available" as const,
+      },
+    ],
+  },
+  {
     name: "String Matching",
     description: "Algorithms for finding patterns within text",
     algorithms: [
@@ -63,46 +192,6 @@ const categories = [
         name: "Rabin-Karp",
         description: "String matching using rolling hash and modular arithmetic for efficient pattern search.",
         complexity: "O(n + m)",
-        status: "available" as const,
-      },
-    ],
-  },
-  {
-    name: "Sorting",
-    description: "Algorithms for ordering elements",
-    algorithms: [
-      {
-        id: "quicksort",
-        name: "Quicksort",
-        description: "Divide-and-conquer sorting using pivot partitioning.",
-        complexity: "O(n log n)",
-        status: "coming-soon" as const,
-      },
-      {
-        id: "mergesort",
-        name: "Merge Sort",
-        description: "Stable divide-and-conquer sorting algorithm.",
-        complexity: "O(n log n)",
-        status: "coming-soon" as const,
-      },
-    ],
-  },
-  {
-    name: "Graph Algorithms",
-    description: "Algorithms for traversing and analyzing graphs",
-    algorithms: [
-      {
-        id: "dijkstra",
-        name: "Dijkstra",
-        description: "Find shortest paths from a source vertex.",
-        complexity: "O((V+E)logV)",
-        status: "coming-soon" as const,
-      },
-      {
-        id: "bfs",
-        name: "BFS",
-        description: "Breadth-first search for level-order traversal.",
-        complexity: "O(V + E)",
         status: "available" as const,
       },
     ],
